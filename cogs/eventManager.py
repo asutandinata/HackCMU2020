@@ -40,7 +40,6 @@ class EventManager(commands.Cog):
         x = 42
 
 
-
     # card functions
     # play hand
     # display table
