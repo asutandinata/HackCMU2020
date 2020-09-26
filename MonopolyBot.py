@@ -84,7 +84,7 @@ async def on_ready():
     print('bot initialized')
     await bot.change_presence(status=discord.Status.idle, activity=discord.Game('I love capitalism'))
 
-@bot.command()
+@bot.command(brief='clears a certain amount of messages')
 async def clear(ctx, amount=5):
     await ctx.channel.purge(limit=amount)
 
@@ -330,7 +330,7 @@ async def bal(ctx):
         await ctx.author.send(player1.balance)
     elif(ctx.author.id==player2.id):
         await ctx.author.send(player2.balance)
-        
+
 @bot.command(brief='ends the current game')
 async def endGame(ctx):   
     #player 1 reset variables
@@ -501,11 +501,25 @@ async def rules(ctx):
     await ctx.send("2. Each player can play up to 2 card during their turn.") 
     await ctx.send("3. If a player gets 2 sets of properties then they win.") 
     await ctx.send("4. If a player has a balance greater than 0 and the other player has a balance less than 0 the first player wins.")
-    await ctx.send("5. A player can skip their turn.")  
+    await ctx.send("5. Each action card has a special ability")
+    await ctx.send("5a. 'rent' cards charge other players $200, but you can only use it when you have a fulls et of 2")
+    await ctx.send("5b. 'double the rent' charges players double the rent, but can only be played with a rent card")
+    await ctx.send("5c. 'houses' increase the rent for a set of properties by $100")
+    await ctx.send("5d. 'it's my birthday' means all players have to give the player who played the it's my birthday card $200")
+    await ctx.send("5e. 'Pass go' cards allow players to draw another 2 cards, regardless of how many they've drawn before")
+    await ctx.send("6. Players start off with a balance of $100")
+    await ctx.send("7. A player can skip their turn.")  
 
+
+@bot.command(brief='credits')
+async def about(ctx):
+    await ctx.send("This bot was created by Anderson Sutandinata, Andrew Chong, and Derek Duenas.")
+    await ctx.send("It was created in 24 hours during the HackCMU hackathon at Carnegie Mellon University.")
+    
+ 
 def setup(bot):
     bot.add_cog(EventManager(bot))
     bot.add_cog(Player(bot))
    
-
+#please dont steal this run code it'll make me very upset-Anderson
 bot.run('NzU5MTc0MzUxMzQxMjIzOTU2.X25qNg.-_PsN-qFJaiqt0VaPPg6brDhA2s')
