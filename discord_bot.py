@@ -5,12 +5,13 @@ import random
 import os
 import string
 
+#from /cogs/mainCog import *
+
 bot=commands.Bot(command_prefix='.')
 
 @bot.event
 async def on_ready():
     print('gray squirrel')
-    bot.load_extension("cogs.maincog")
 
 @bot.event
 async def on_member_join(member):
@@ -26,14 +27,29 @@ async def graySquirrel(ctx):
     await ctx.send("swish your bushy tail")
 
 
+
+
 @bot.command()
-async def owner(ctx):
-    ownerString = bot.owner_id
-   # owner.
-    print(ownerString)
-    await ctx.send(ownerString)
+async def load(ctx, extension): #extension is cog
+    bot.load_extension(f'cogs.{extension}')
+
+@bot.command()
+async def unload(ctx, extension): #extension is cog
+    bot.unload_extension(f'cogs.{extension}')
+
+for filename in os.listdir("./cogs"):
+    if filename.endswith(".py"):
+        bot.load_extension(f'cogs.{filename[:-3]}')
 
 
+
+
+'''
+@bot.command()
+async def callMainCog(ctx):
+    MainCog.acommand(ctx)
+
+'''
 
 @bot.command()
 async def repeat(ctx, *args):
@@ -47,11 +63,12 @@ async def repeat(ctx, *args):
 class squirrel(commands.Cog):
     squirrelColor = "gray"
 
-    async def squirrelColorDeclare(args):
+    @commands.command()
+    async def squirrelColorDeclare(self,ctx,args):
         squirrelColor = args
         await ctx.send(squirrelColor)
 
-
+'''
 
 class Economy(commands.Cog):
 
@@ -78,6 +95,10 @@ class Gambling(commands.Cog):
             await economy.withdraw_money(ctx.author, money)
             if self.coinflip() == 1:
                 await economy.deposit_money(ctx.author, money * 1.5)
+'''
 
 #run actual bot
+#bot.load_extension("cogs.MainCog")
+#bot.add_cog(mainCog(bot))
+
 bot.run('NzU5MTY0MjYxNzI0ODQ4MTQ4.X25g0A.9drjnmy12qRPmU5GlPB0EiwpcUQ')
