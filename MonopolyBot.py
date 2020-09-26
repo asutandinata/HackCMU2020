@@ -216,14 +216,14 @@ async def play(ctx, id):
             
     elif(id==21 or id==22):#it's my birthday card
         if(containsBirthday(player)):
-            transferMoney(ctx, player ,otherPlayerpponent, 200)
+            transferMoney(player ,opponent, 200)
             await ctx.author.send("you have successfully played your birthday card")
             #remove birthday card
         else:await ctx.author.send("you don't have a birthday card")
 
     if(id==23 or id==24):#double rent play
         if(containsDoubleRent):
-            if(checkFullSet(ctx, player)and check(len.player.rent>0)):
+            if(checkFullSet(ctx, player) and check(len(player.rent)>0)):
                 transferMoney(ctx,player,opponent, 400)
             #remove rent card, remove double rent card
         else:await ctx.author.send("you don't have a double rent card")
@@ -235,7 +235,13 @@ async def play(ctx, id):
             await ctx.author.send("you have succesfully played your pass go card")
             #remove pa
         else:await ctx.author.send("you don't have a pass go card")
-    
+@bot.command()
+async def bal(ctx):
+    if(ctx.author.id==player1.id):
+        await ctx.author.send(player1.balance)
+    elif(ctx.author.id==player2.id):
+        await ctx.author.send(player2.balance)
+
 @bot.command()
 async def dm(ctx, message):
     await ctx.author.send(message)
@@ -251,11 +257,7 @@ async def isWinner(ctx, Player):
     await ctx.send(f'{Player} has won!')
 
 def containsRent(player):
-    counted=0
-    for i in range(len(player.actionCard)):
-        if(player.actionCard[i]==16 or player.actionCard[i]==17 or player.actionCard[i]==18 or player.actionCard[i]==19 or player.actionCard[i]==20):
-            counted+=1
-    if(counted>0):return True
+    if(len(player.rent)>0):return True
     else:return False
 
 def containsBirthday(player):
@@ -267,11 +269,7 @@ def containsBirthday(player):
     else:return False
     
 def containsDoubleRent(player):
-    counted=0
-    for i in range(len(player.actionCard)):
-        if(player.actionCard[i]==23 or player.actionCard[i]==24):
-            counted+=1
-    if(counted>0):return True
+    if(23 in player.actionCard or 24 in player.actionCard):return True
     else:return False
 
 def containsPassGo(player):
