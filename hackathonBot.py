@@ -2,7 +2,8 @@ import discord
 from discord.ext import commands
 import os
 import string
-
+id1=0
+id2=0
 
 bot=commands.Bot(command_prefix='/')
 
@@ -56,22 +57,28 @@ async def ping(ctx):
     await ctx.send(f'ur ping is {bot.latency*1000} ms')
 @bot.command()
 async def beginGame(ctx):
-    msg = await ctx.send('press the check below if you would like to join the game')
+    msg = await ctx.send('press the green or blue check below if you would like to join the game')
     await msg.add_reaction("\u2705")
+    await msg.add_reaction("\u2611")
     ctx.author.send(f'{user.name} has been added to the game')
 
 @bot.event
 async def on_reaction_add(reaction, user):
-#    userCount+=1
     channel=reaction.message.channel
-#    id=payload.message_id
-    id=user.id
-    user=bot.get_user(id)
     if reaction.emoji=='\u2705':  
-        await user.send('you have joined the game')
+        id1=user.id
+        user=bot.get_user(id1)
+        await user.send('you have joined the game player 1')
+        for i in range(1, 10):
+            await user.send(file=discord.File(f'{i}.png'))
         print('a player has joined')
-    await channel.send(f'{user.name} has added {reaction.emoji} in {channel}')
-    return True
+    elif reaction.emoji=='\u2611':
+        id2=user.id
+        user=bot.get_user(id2)
+        await user.send('you have joined the game player 2')
+        print('a player has joined')
+
+    
 @bot.event
 async def on_reaction_remove(reaction, user):
     channel=reaction.message.channel
