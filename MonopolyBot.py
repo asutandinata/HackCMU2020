@@ -133,9 +133,9 @@ async def on_reaction_add(reaction, user):
         await user.send('you have joined the game player 1')
         player1.id=id1
         player1.isTurn=True
-        player1.properties=[1,2]
+        player1.properties=[1,2,3,4]
         player1.rent=[11]
-        player1.actionCard=[16, 34]
+        player1.actionCard=[16]
         print('drawing player 1 cards')
         # drawCard(player1)
         # drawCard(player1)
@@ -249,17 +249,20 @@ async def play(ctx, id):
     if(ctx.author.id==player1.id):
         player=player1
         opponent=player2
+        opp=bot.get_user(player2.id)
     elif(ctx.author.id==player2.id):
         player=player2
         opponent=player1
+        opp=bot.get_user(player1.id)
     if(player.isTurn and player.played<2):
         if(id<11):
             await ctx.author.send('not a valid play, you can only play rent or action cards')
         if(11<=id and id<=15):#charge other player rent
             if(len(player.rent)>0):
-                if(checkFullSets(ctx, player)):
+                if(checkFullSets(ctx, player)>0):
                     transferMoney(player,opponent, 200+(100 * player.houses))
                     await ctx.author.send('successfully played a rent card')
+                    await opp.send(f'opponent played a rent card, you lost {200+(100 * player.houses)} dollars')
                     removeRentCard(id, player)
                     player.played+=1
                 else:
@@ -268,7 +271,7 @@ async def play(ctx, id):
                 await ctx.author.send("you don't have a rent card")
         elif(16<=id and id<=20):#house card
             if(containsHouse(player)):
-                if(checkFullSets(ctx, player)):
+                if(checkFullSets(ctx, player)>0):
                     player.houses+=1
                     removeActionCard(id, player)
                     await ctx.author.send('successfully played a house card')
@@ -283,18 +286,26 @@ async def play(ctx, id):
                 transferMoney(player ,opponent, 200)
                 player.played+=1
                 await ctx.author.send("you have successfully played your birthday card")
+                await opp.send('opponent played a birthday card, you lost 200 dollars')
                 removeActionCard(id, player)
+                
                 #remove birthdaycard
             else:await ctx.author.send("you don't have a birthday card")
 
         if(id==23 or id==24):#double rent play
             if(containsDoubleRent(player)):
-                if(checkFullSet(ctx, player) and check(len(player.rent)>0)):
+                if(checkFullSets(ctx, player)>0 and (len(player.rent)>0)):
                     player.played+=1
-                    print("checkFullSet is true")
-                    transferMoney(ctx,player,opponent, 400)
-                    removeRentCard(id, player)
-                    #  remove double rent card
+                    print("checkFullSets is true")
+                    transferMoney(player,opponent, 2*(200+(100 * player.houses)))
+                    removeActionCard(id, player)#removes double rent
+                    index=0
+                    for i in range(len(player.rent)):
+                        if(player.rent[i]>0):
+                            index=int(player.rent[i])
+                    await ctx.author.send("you have successfully played a double rent card")
+                    await opp.send(f'double rent card, you have lost {2*(200+(100 * player.houses))} dollars')
+                    removeRentCard(index, player)
                 else: ctx.author.send('you either dont have a full set, or are missing rent cards')
             else:await ctx.author.send("you don't have a double rent card")
             
@@ -309,11 +320,17 @@ async def play(ctx, id):
         if(id==27):
             if(containsDebtCollector(player)):
                 await ctx.author.send("you have successfully played your debt collector card")
-                transferMoney(ctx,player,opponent, 500)
+                await opp.send('opponent played debt collector, you lost $500')
+                transferMoney(player,opponent, 500)
                 removeActionCard(id, player)
                 player.played+=1
             else: await ctx.author.send('you do not have a debt collector card')
-        checkWin(ctx, player)
+        if(player.balance>0 and opponent.balance<0):
+            await ctx.author.send("you have won by winning capitalism")
+            await opp.send('you have lost by going bankrupt')
+        elif(checkFullSets(ctx, player)>=2):
+            await ctx.author.send("you have won by collecting 2 fulls sets")
+            await opp.send('you have lost, other player collected 2 full sets')
     elif(opponent.isTurn):await ctx.author.send("it's not your turn. Please wait until the other player has finished")
     elif(player.played>=2):await ctx.author.send("you have played the max number of cards in your turn, please end your turn with /endTurn")
     
@@ -339,23 +356,6 @@ async def on_ready(): # self must be first parameter in every function in class
 async def isWinner(ctx, Player):
     await ctx.send(f'{Player} has won!')
 
-def checkWin(ctx, player):
-    if(player == player1):
-        if(player1.checkFullSet(ctx, player) >= 2):
-            isWinner(ctx, player)
-            return True
-        elif(player2.getBalance() < 0):
-            isWinner(ctx, player)
-            return True    
-    elif(player == player2):
-        if(player1.checkFullSet(ctx, player) >= 2):
-            isWinner(ctx, player)
-            return True
-        elif(player2.getBalance() < 0):
-            isWinner(ctx, player)
-            return True    
-    else:
-        return False
 def containsHouse(player):
     counted=0
     for i in range(len(player.actionCard)):
@@ -364,6 +364,7 @@ def containsHouse(player):
     if(counted>0):return True
     else:return False
 def containsDebtCollector(player):
+    counted=0
     for i in range(len(player.actionCard)):
         if(player.actionCard[i]==27):
             counted+=1
@@ -418,7 +419,7 @@ def checkFullSets(ctx, player):
             fullSets += 1
         if(player.properties[i] == 9 and player.properties[i+1] == 10):
             fullSets += 1
-    return fullSets + red
+    return int(fullSets + red)
 
 def transferMoney(player, opponent, amount):
     player.balance+=amount
@@ -430,18 +431,6 @@ def transferMoney(player, opponent, amount):
 async def on_message(message):
     print(message.content)
 
-@commands.command()
-async def setPlayers(*args):
-    for player in args:
-        players += player
-
-@commands.command()
-async def playTurn():
-    x = 42
-
-@commands.command()
-async def makeTurn(ctx, Player):
-    x = 42
 
 def drawCard(player):
     i = random.randint(0, len(deck)-1)
