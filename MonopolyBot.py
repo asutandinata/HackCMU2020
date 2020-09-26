@@ -21,6 +21,7 @@ class Player(commands.Cog):
     canDraw=True
     hand=[]
     fullSets = 0
+    latestCard=0
 
     def __init__(self, bot):
         self.bot = bot
@@ -81,7 +82,7 @@ async def on_member_remove(member):
 @bot.event
 async def on_ready():
     print('bot initialized')
-    await bot.change_presence(status=discord.Status.idle, activity=discord.Game('this is only a test'))
+    await bot.change_presence(status=discord.Status.idle, activity=discord.Game('I love capitalism'))
 
 @bot.command()
 async def clear(ctx, amount=5):
@@ -114,16 +115,15 @@ for filename in os.listdir("./cogs"):
 
 #####################DISCORD GAME###########################################
 
-@bot.command()
+@bot.command(brief='calculates your ping')
 async def ping(ctx):
     await ctx.send(f'ur ping is {bot.latency*1000} ms')
-@bot.command()
-
+@bot.command(brief='starts up a game of monopoly deal')
 async def beginGame(ctx):
     msg = await ctx.send('react with the green check to be player 1, or react with the blue check to be player 2')
     await msg.add_reaction("\u2705")
     await msg.add_reaction("\u2611")
-
+    
 @bot.event
 async def on_reaction_add(reaction, user):
     channel=reaction.message.channel
@@ -133,49 +133,36 @@ async def on_reaction_add(reaction, user):
         await user.send('you have joined the game player 1')
         player1.id=id1
         player1.isTurn=True
-        player1.properties=[1,2,3,4]
-        player1.rent=[11]
-        player1.actionCard=[16]
-        print('drawing player 1 cards')
-        # drawCard(player1)
-        # drawCard(player1)
-        # drawCard(player1)
-        # drawCard(player1)
-        # drawCard(player1)
-        # player1.actionCard=[16, 21, 25]
-        # player1.rent=[11]
-        # player1.properties=[2]
+        player1.properties=[]
+        player1.rent=[]
+        player1.actionCard=[]
+        #print('drawing player 1 cards')
+        for i in range(5):
+            drawCard(player1)
     if reaction.emoji=='\u2611':
         id2=user.id
         user=bot.get_user(id2)
         await user.send('you have joined the game player 2')
         player2.id=id2
         player2.isTurn=False
-        print('drawing player 2 cards')
+        #print('drawing player 2 cards')
         player2.properties = []
         player2.rent = []
         player2.actionCard=[]
-        drawCard(player2)
-        drawCard(player2)
-        drawCard(player2)
-        drawCard(player2)
-        drawCard(player2)
-        # player2.actionCard=[17, 23]
-        # player2.rent=[12, 14]
-        # player2.properties=[5]
-
-    print(player1.properties)
-    print(player2.properties)
+        for i in range(5):
+            drawCard(player2)
+        
+  
     
      
-@bot.command()
+@bot.command(brief='identifies what player number you are if you forget')
 async def identify(ctx):
     if(ctx.author.id==player1.id):
          await ctx.author.send('you are player 1')
     elif(ctx.author.id==player2.id):
          await ctx.author.send('you are player 2')
 
-@bot.command()
+@bot.command(brief='draws a card')
 async def draw(ctx):
     if(ctx.author.id==player1.id):
         player= player1
@@ -188,19 +175,17 @@ async def draw(ctx):
     elif(player.isTurn and player.canDraw):
         prevBalance=player.balance
         drawCard(player)
-        await ctx.author.send("you've just drawn a card! this is your deck now:")
+        await ctx.author.send("you've just drawn a card! this is what you just drew")
         if(prevBalance<player.balance):
             await ctx.author.send(f'you have gained {player.balance-prevBalance} dollars')
         player.canDraw=False
         player.hand=player.properties+player.rent+player.actionCard
-        for i in range(len(player.hand)):
-            imageVal=player.hand[i]
-            await ctx.author.send(file=discord.File(f'{imageVal}.png'))
+        await ctx.author.send(file=discord.File(f'{player.latestCard}.png'))
         await ctx.author.send('end of your cards') 
 
     
 
-@bot.command()
+@bot.command(brief='prints all cards in your deck')
 async def printCards(ctx):
     if(ctx.author.id==player1.id):
         hand=player1.properties+player1.rent+player1.actionCard
@@ -212,7 +197,7 @@ async def printCards(ctx):
     await ctx.author.send('end of your cards')  
 
 
-@bot.command()    
+@bot.command(brief='prints all properties each player has')    
 async def printTable(ctx):
     await ctx.author.send("player 1's properties")  
     for i in range(len(player1.properties)):
@@ -223,7 +208,7 @@ async def printTable(ctx):
         imageVal = player2.properties[i]
         await ctx.author.send(file=discord.File(f'{imageVal}.png'))
         
-@bot.command()
+@bot.command(brief="ends a user's turn")
 async def endTurn(ctx):
     p1=bot.get_user(player1.id)
     p2=bot.get_user(player2.id)
@@ -232,17 +217,19 @@ async def endTurn(ctx):
         player2.isTurn=True
         await p1.send('you have finished your turn')
         await p2.send('it is your turn now')
+        await p2.send(f'you start off with a balance of ${player2.balance}')
     elif(ctx.author.id==player2.id):
         player2.isTurn=False
         player1.isTurn=True
         await p2.send('you have finished your turn')
         await p1.send('it is your turn now')
+        await p1.send(f'you start off with a balance of ${player1.balance}')
     player1.played = 0
     player2.played = 0
     player1.canDraw=True
     player2.canDraw=True
-    print(player1.isTurn, player2.isTurn)
-@bot.command()
+    #print(player1.isTurn, player2.isTurn)
+@bot.command(brief='play an action or rent card, done by typing /play CardID')
 async def play(ctx, id):
     id=int(id)
     
@@ -311,9 +298,11 @@ async def play(ctx, id):
             
         if(id==25 or id==26):#pass go, draw 2 cards
             if(containsPassGo(player)):
-                for i in range(2):
-                    drawCard(player)
                 await ctx.author.send("you have succesfully played your pass go card")
+                await ctx.author.send("you have recieved these 2 cards")
+                for i in range(2):
+                    await ctx.author.send(file=discord.File(f'{player.latestCard}.png'))
+                    drawCard(player)
                 player.played+=1
                 removeActionCard(id, player)
             else:await ctx.author.send("you don't have a pass go card")
@@ -335,17 +324,45 @@ async def play(ctx, id):
     elif(player.played>=2):await ctx.author.send("you have played the max number of cards in your turn, please end your turn with /endTurn")
     
 
-@bot.command()
+@bot.command(brief='returns your balance')
 async def bal(ctx):
     if(ctx.author.id==player1.id):
         await ctx.author.send(player1.balance)
     elif(ctx.author.id==player2.id):
         await ctx.author.send(player2.balance)
+        
+@bot.command(brief='ends the current game')
+async def endGame(ctx):   
+    #player 1 reset variables
+    player1.id=0
+    player1.balance = 100
+    player1.rent = []
+    player1.properties = []
+    player1.actionCard = []
+    player1.won=False
+    player1.houses = 0
+    player1.isTurn=False
+    player1.played = 0
+    player1.canDraw=True
+    player1.hand=[]
+    player1.fullSets = 0
+    player1.latestCard=0
+####player 2 reset variables
+    player2.id=0
+    player2.balance = 100
+    player2.rent = []
+    player2.properties = []
+    player2.actionCard = []
+    player2.won=False
+    player2.houses = 0
+    player2.isTurn=False
+    player2.played = 0
+    player2.canDraw=True
+    player2.hand=[]
+    player2.fullSets = 0
+    player2.latestCard=0
 
-@bot.command()
-async def dm(ctx, message):
-    await ctx.author.send(message)
-
+    
 ###########EVENT MANAGER#############
 
 @commands.Cog.listener()
@@ -438,21 +455,23 @@ def drawCard(player):
         #player.addProperties(deck[i])
         a=deck[i]
         player.properties.append(a)
+        player.latestCard=a
         deck.pop(i)   
     elif(10 < deck[i] and deck[i] <= 15):
         #player.addRent(deck[i])
         a=deck[i]
         player.rent.append(a)
+        player.latestCard=a
         deck.pop(i)   
     elif(15 < deck[i] and deck[i] <= 27):
         #player.addActionCard(deck[i])
         a=deck[i]
         player.actionCard.append(a)
+        player.latestCard=a
         deck.pop(i)   
     elif(27 < deck[i] and deck[i] < 37):
         a=deck[i]
         player.deposit(math.ceil((a-27)/2)*100)
-        print("gained money")     
         deck.pop(i)          
 
 def removeActionCard(id, player):   
@@ -475,6 +494,14 @@ def trasferMoney(ctx, player1, player2, amount):
         player2.deposit(player2,ctx,amount)
         #self.withdraw(Player1,ctx,amount)        
 
+@bot.command(brief='rules of monopoly deal')
+async def rules(ctx):
+    await ctx.send("Note: This game is currently only for 2 players")
+    await ctx.send("1. Each player can draw 1 card during their turn.")
+    await ctx.send("2. Each player can play up to 2 card during their turn.") 
+    await ctx.send("3. If a player gets 2 sets of properties then they win.") 
+    await ctx.send("4. If a player has a balance greater than 0 and the other player has a balance less than 0 the first player wins.")
+    await ctx.send("5. A player can skip their turn.")  
 
 def setup(bot):
     bot.add_cog(EventManager(bot))
