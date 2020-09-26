@@ -16,7 +16,7 @@ class MainCog(commands.Cog):
 
     @commands.command()
     async def ping2(self,ctx):
-        await ctx.send("pong")
+        await ctx.send("POG")
 
     async def on_message(self, message):
         print(message.content)
