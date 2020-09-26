@@ -41,11 +41,11 @@ async def reload(ctx, extension): #extension is cog
     bot.unload_extension(f'cogs.{extension}')
     bot.load_extension(f'cogs.{extension}')
     await ctx.send("reloaded cog")
-
-for filename in os.listdir("./cogs"):
+'''
+for filename in os.listdir("./cogs"):   #load other files as cogs
     if filename.endswith(".py"):
         bot.load_extension(f'cogs.{filename[:-3]}')
-
+'''
 @bot.command()
 async def repeat(ctx, *args):
     fullString = ""

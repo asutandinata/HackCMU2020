@@ -55,14 +55,15 @@ class EventManager(commands.Cog):
     # card functions
     # play hand
     # display table
+    @commands.command()
+    async def trasferMoney(self, ctx, Player = player1, Player = player2, amount):
+        # self.withde
+            player1.withdraw(player1, ctx, amount)
+            player2.deposit(player2,ctx,amount)
+
+            #self.withdraw(Player1,ctx,amount)        
 
 
-@commands.command()
-async def trasferMoney(self, ctx, Player = player1, Player = player2, amount):
-       # self.withde
-        player1.withdraw(player1, ctx, amount)
-        player2.deposit(player2,ctx,amount)
-
-        #self.withdraw(Player1,ctx,amount)        
+            
 def setup(bot):
     bot.add_cog(EventManager(bot))
