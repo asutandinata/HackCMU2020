@@ -16,6 +16,5 @@ class MainCog(commands.Cog):
     async def ping2(self,ctx):
         await ctx.send("POG")
 
-
 def setup(bot):
     bot.add_cog(MainCog(bot))

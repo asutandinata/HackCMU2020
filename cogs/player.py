@@ -6,8 +6,10 @@ import os
 class Player(commands.Cog):
 
     balance = 0
-    properties = {}
     rent = {}
+    properties = {}
+    actionCard = {}
+
 
     def __init__(self, bot):
         self.bot = bot
@@ -38,7 +40,6 @@ class Player(commands.Cog):
     @commands.command()
     async def getRent(self,ctx):
         await ctx.send(self.rent)
-
 
 def setup(bot):
     bot.add_cog(Player(bot))
