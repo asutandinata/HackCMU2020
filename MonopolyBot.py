@@ -22,18 +22,18 @@ class Player(commands.Cog):
     async def on_ready(self): # self must be first parameter in every function in class
         print("Player Cog enabled")
 
-    @commands.command()
+    
     async def withdraw(self, ctx, withdrawAmount):
         if(self.balance - withdrawAmount < 0):
             await ctx.send("Not enough money!")
         else:
             self.balance -= withdrawAmount
 
-    @commands.command()
-    async def deposit(self, depositAmount):
+    
+    def deposit(self, depositAmount):
         self.balance += depositAmount
 
-    @commands.command()
+    
     async def getBalance(self,ctx):
         await ctx.send(self.balance)
 
@@ -51,7 +51,7 @@ player1=Player(bot)
 player2=Player(bot)
 ###########HACKATHON MAIN################
 deck = list(range(27))
-deck.pop(0)
+#deck.pop(0)
 #print(deck)
 
 
@@ -126,42 +126,49 @@ async def on_reaction_add(reaction, user):
         player2.id=id2
         for i in range(5):
             drawCard(player2)
-        
+
 @bot.command()
-async def printCards1(ctx):
-    hand=player1.properties+player1.rent+player1.actionCard
+async def printCards(ctx):
+    if(ctx.author.id==player1.id):
+        hand=player1.properties+player1.rent+player1.actionCard
+    elif(ctx.author.id==player2.id):
+        hand=player2.properties+player2.rent+player2.actionCard
     for i in range(len(hand)):
         imageVal=hand[i]
         await ctx.author.send(file=discord.File(f'{imageVal}.png'))  
-        await ctx.author.send('end of your cards')
+    await ctx.author.send('end of your cards')        
 
-@bot.command()
-async def printCards2(ctx):
-    hand=player2.properties+player2.rent+player2.actionCard
-    for i in range(len(hand)):
-        imageVal=hand[i]
-        await ctx.author.send(file=discord.File(f'{imageVal}.png'))
-        await ctx.author.send('end of your cards')  
 
 @bot.command()
 async def play(ctx, id):
+    id=int(id)
+    if(ctx.author.id==player1.id):
+        player=player1
+        opponent=player2
+    elif(ctx.author.id==player2.id):
+        player=player2
+        opponent=player1
     if(11<=id and id<=15):#charge other player rent
-        #if(#player has fuill set):
-            transferMoney(ctx,player1,player2, 200)
-            
+        if(checkFullSet(player)):
+            transferMoney(ctx,player,opponent, 200)
+            #remove rent card
+        else:
+            await ctx.author.send("you don't have a full set")
     elif(16<=id and id<=20):
-        #if(#player has fuill set):
+        if(checkFullSet(player)):
             player1.properties+=1
             
-    elif(21<=id and id<=22):
-        transferMoney(ctx, player1,player2, 200)
-        
-    if(23<=id and id<=24):
-        #if(#player has fuill set):
-            transferMoney(ctx,player1,player2, 200)
-        
-    if(25<=id and id<=26):
-        drawCards
+    elif(21<=id and id<=22):#it's my birthday card
+        transferMoney(ctx, player ,otherPlayerpponent, 200)
+
+    if(23<=id and id<=24):#double rent play
+        if(checkFullSet(player)and check(len.player.rent>0)):
+            transferMoney(ctx,player,opponent, 400)
+            #remove rent card, remove double rent card
+    if(25<=id and id<=26):#pass go, draw 2 cards
+        for i in range(2):
+            drawCard(player)
+            await ctx.author.send("you have succesfully played your pass go card")
     
 @bot.command()
 async def dm(ctx, message):
@@ -176,6 +183,30 @@ async def on_ready(): # self must be first parameter in every function in class
 @commands.command()
 async def isWinner(ctx, Player):
     await ctx.send(f'{Player} has won!')
+
+def sortArrays():    
+    player1.properties.sort()
+    player1.rent.sort()
+    player1.actionCard.sort()
+    player2.properties.sort()
+    player2.rent.sort()
+    player2.actionCard.sort()
+    
+
+def checkFullSet(ctx, player):
+    sortArrays()
+    for i in range(0,10):
+        if(player.properties[i] == 1 and player.properties[i+1] == 2):
+            return True
+        if(player.properties[i] == 3 and player.properties[i+1] == 4):
+            return True
+        if(player.properties[i] == 5 and player.properties[i+1] == 6):
+            return True
+        if(player.properties[i] == 7 and player.properties[i+1] == 8):
+            return True
+        if(player.properties[i] == 9 and player.properties[i+1] == 10):
+            return True
+    return False
 
 @commands.command()
 async def on_message(message):
@@ -203,9 +234,12 @@ async def dispTable(ctx, id, player1, player2):
 
 
 def drawCard(player):
-    i = random.randint(1, len(deck))
+    i = random.randint(0, len(deck))
     print(i)
     print(deck[i])
+    print(deck[0])
+    if(0 <= i and i < len(deck)):
+        print("valid index")
     if(deck[i] <= 10):
         player.properties.append(i)
     elif(deck[i] <= 15):
@@ -214,7 +248,7 @@ def drawCard(player):
         player.actionCard.append(i)
     deck.pop(i);   
 
-async def removeCard(id, player):
+def removeCard(id, player):
     player.properties.remove(id)
     deck.append(id)
 
@@ -225,9 +259,8 @@ async def isHandSizeValid(player):
     else:
         return False
 
-@commands.command()
-async def trasferMoney(ctx, player1, player2, amount):
-    # self.withde
+
+def trasferMoney(ctx, player1, player2, amount):
         player1.withdraw(player1, ctx, amount)
         player2.deposit(player2,ctx,amount)
         #self.withdraw(Player1,ctx,amount)        
