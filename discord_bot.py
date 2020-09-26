@@ -26,16 +26,21 @@ async def pinger(ctx):
 async def graySquirrel(ctx):
     await ctx.send("swish your bushy tail")
 
-
-
-
 @bot.command()
 async def load(ctx, extension): #extension is cog
     bot.load_extension(f'cogs.{extension}')
+    await ctx.send("loaded cog")
 
 @bot.command()
 async def unload(ctx, extension): #extension is cog
     bot.unload_extension(f'cogs.{extension}')
+    await ctx.send("unloaded cog")
+
+@bot.command()
+async def reload(ctx, extension): #extension is cog
+    bot.unload_extension(f'cogs.{extension}')
+    bot.load_extension(f'cogs.{extension}')
+    await ctx.send("reloaded cog")
 
 for filename in os.listdir("./cogs"):
     if filename.endswith(".py"):
