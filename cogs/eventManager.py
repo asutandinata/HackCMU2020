@@ -14,7 +14,6 @@ class EventManager(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self): # self must be first parameter in every function in class
         print("event manager cog enables")
-    
 
     @commands.command()
     async def isWinner(self, ctx, Player):
@@ -40,9 +39,7 @@ class EventManager(commands.Cog):
     async def makeTurn(self, ctx, Player):
         x = 42
 
-    @commands.command()
-    async def transferMoney(self, ctx, Player1, Player2):
-        x = 42
+
 
     # card functions
     # play hand
@@ -50,7 +47,8 @@ class EventManager(commands.Cog):
 
 
     @commands.command()
-    async def trasferMoney(self, ctx, Player = player1, Player = player2, amount):
+    async def trasferMoney(self, ctx, amount, Player1, Player2):
+
        # self.withde
         player1.withdraw(player1, ctx, amount)
         player2.deposit(player2,ctx,amount)
