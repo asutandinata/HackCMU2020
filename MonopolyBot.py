@@ -29,7 +29,15 @@ class Player(commands.Cog):
     async def on_ready(self): # self must be first parameter in every function in class
         print("Player Cog enabled")
 
+    # def addProperties(self, id):
+    #     self.properties.append(id)
     
+    # def addActionCard(self, id):
+    #     self.actionCard.append(id)
+
+    # def addRent(self, id):
+    #     self.rent.append(id)
+
     async def withdraw(self, ctx, withdrawAmount):
         if(self.balance - withdrawAmount < 0):
             await ctx.send("Not enough money!")
@@ -125,26 +133,40 @@ async def on_reaction_add(reaction, user):
         await user.send('you have joined the game player 1')
         player1.id=id1
         player1.isTurn=True
-        player1.actionCard=[16, 21, 25]
+        player1.properties=[1,2]
         player1.rent=[11]
-        player1.properties=[2]
+        player1.actionCard=[16, 34]
+        print('drawing player 1 cards')
+        # drawCard(player1)
+        # drawCard(player1)
+        # drawCard(player1)
+        # drawCard(player1)
+        # drawCard(player1)
+        # player1.actionCard=[16, 21, 25]
+        # player1.rent=[11]
+        # player1.properties=[2]
     if reaction.emoji=='\u2611':
         id2=user.id
         user=bot.get_user(id2)
         await user.send('you have joined the game player 2')
         player2.id=id2
         player2.isTurn=False
-        player2.actionCard=[17, 23]
-        player2.rent=[12, 14]
-        player2.properties=[5]
+        print('drawing player 2 cards')
+        player2.properties = []
+        player2.rent = []
+        player2.actionCard=[]
+        drawCard(player2)
+        drawCard(player2)
+        drawCard(player2)
+        drawCard(player2)
+        drawCard(player2)
+        # player2.actionCard=[17, 23]
+        # player2.rent=[12, 14]
+        # player2.properties=[5]
 
-def beginningCardsP1():
-    for i in range(5):
-        drawCard(player1)
-
-def beginningCardsP2():
-    for i in range(5):
-        drawCard(player2)  
+    print(player1.properties)
+    print(player2.properties)
+    
      
 @bot.command()
 async def identify(ctx):
@@ -235,8 +257,9 @@ async def play(ctx, id):
             await ctx.author.send('not a valid play, you can only play rent or action cards')
         if(11<=id and id<=15):#charge other player rent
             if(len(player.rent)>0):
-                if(checkFullSet(ctx, player)):
-                    transferMoney(player,opponent, 200+(100 * houses))
+                if(checkFullSets(ctx, player)):
+                    transferMoney(player,opponent, 200+(100 * player.houses))
+                    await ctx.author.send('successfully played a rent card')
                     removeRentCard(id, player)
                     player.played+=1
                 else:
@@ -245,9 +268,10 @@ async def play(ctx, id):
                 await ctx.author.send("you don't have a rent card")
         elif(16<=id and id<=20):#house card
             if(containsHouse(player)):
-                if(checkFullSet(ctx, player)):
-                    player.addHouse()
+                if(checkFullSets(ctx, player)):
+                    player.houses+=1
                     removeActionCard(id, player)
+                    await ctx.author.send('successfully played a house card')
                     player.played+=1
 
                 else:
@@ -289,6 +313,7 @@ async def play(ctx, id):
                 removeActionCard(id, player)
                 player.played+=1
             else: await ctx.author.send('you do not have a debt collector card')
+        checkWin(ctx, player)
     elif(opponent.isTurn):await ctx.author.send("it's not your turn. Please wait until the other player has finished")
     elif(player.played>=2):await ctx.author.send("you have played the max number of cards in your turn, please end your turn with /endTurn")
     
@@ -316,14 +341,14 @@ async def isWinner(ctx, Player):
 
 def checkWin(ctx, player):
     if(player == player1):
-        if(player1.checkFullSet(ctx, player)):
+        if(player1.checkFullSet(ctx, player) >= 2):
             isWinner(ctx, player)
             return True
         elif(player2.getBalance() < 0):
             isWinner(ctx, player)
             return True    
     elif(player == player2):
-        if(player1.checkFullSet(ctx, player)):
+        if(player1.checkFullSet(ctx, player) >= 2):
             isWinner(ctx, player)
             return True
         elif(player2.getBalance() < 0):
@@ -380,10 +405,11 @@ def sortArrays():
 def checkFullSets(ctx, player):
     sortArrays()
     fullSets = 0
+    red = 0
     for i in range(0, len(player.properties)):
         if((player.properties[i] == 0 and player.properties[i+1] == 1) or 
         (player.properties[i] == 0 and player.properties[i+1] == 2) or (player.properties[i] == 1 and player.properties[i+1] == 2)):
-            fullSets += 1
+            red = 1
         if(player.properties[i] == 3 and player.properties[i+1] == 4):
             fullSets += 1
         if(player.properties[i] == 5 and player.properties[i+1] == 6):
@@ -392,10 +418,7 @@ def checkFullSets(ctx, player):
             fullSets += 1
         if(player.properties[i] == 9 and player.properties[i+1] == 10):
             fullSets += 1
-    if(fullSets < 2):
-        return False
-    elif(fullSets >= 2):
-        return True
+    return fullSets + red
 
 def transferMoney(player, opponent, amount):
     player.balance+=amount
@@ -420,27 +443,28 @@ async def playTurn():
 async def makeTurn(ctx, Player):
     x = 42
 
-def drawCard(Player):
+def drawCard(player):
     i = random.randint(0, len(deck)-1)
-    if(player1 == Player):
-        player = player1
-    else:
-        player = player2
-    #print(i)
-    #print(deck[i])
-    if(0 <= i and i < len(deck)):
-        print("valid index")
-    if(  0 <= deck[i] and deck[i] <= 10):
-        player.properties.append(deck[i])
+    if( 0 <= deck[i] and deck[i] <= 10):
+        #player.addProperties(deck[i])
+        a=deck[i]
+        player.properties.append(a)
+        deck.pop(i)   
     elif(10 < deck[i] and deck[i] <= 15):
-        player.rent.append(deck[i])
+        #player.addRent(deck[i])
+        a=deck[i]
+        player.rent.append(a)
+        deck.pop(i)   
     elif(15 < deck[i] and deck[i] <= 27):
-        player.actionCard.append(deck[i])
+        #player.addActionCard(deck[i])
+        a=deck[i]
+        player.actionCard.append(a)
+        deck.pop(i)   
     elif(27 < deck[i] and deck[i] < 37):
         a=deck[i]
         player.deposit(math.ceil((a-27)/2)*100)
         print("gained money")     
-    deck.pop(i);          
+        deck.pop(i)          
 
 def removeActionCard(id, player):   
     player.actionCard.remove(id)
@@ -456,9 +480,6 @@ async def isHandSizeValid(player):
         return True
     else:
         return False
-
-def addHouse(player):
-    houses += 1
 
 def trasferMoney(ctx, player1, player2, amount):
         player1.withdraw(player1, ctx, amount)
