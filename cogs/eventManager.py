@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import os
-from cogs import player
+from player import Player
 
 class EventManager(commands.Cog):
 
@@ -50,23 +50,11 @@ class EventManager(commands.Cog):
 
 
     @commands.command()
-    async def trasferMoney(self, ctx, Player1, Player2, amount):
+    async def trasferMoney(self, ctx, Player = player1, Player = player2, amount):
        # self.withde
-        
+        player1.withdraw(player1, ctx, amount)
+        player2.deposit(player2,ctx,amount)
 
-        Player1.withdraw(Player1, ctx, amount)
-        Player2.deposit(Player2,ctx,amount)
-
-
-        EventManager.players
-
-        #self.withdraw(Player1,ctx,amount)
-
-        
-
-
-
-
-        
+        #self.withdraw(Player1,ctx,amount)        
 def setup(bot):
     bot.add_cog(EventManager(bot))

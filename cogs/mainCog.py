@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
+from eventManager import EventManager
 import os
-
 
 class MainCog(commands.Cog):
 

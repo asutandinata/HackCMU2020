@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import os
 import string
+
 id1=0
 id2=0
 
