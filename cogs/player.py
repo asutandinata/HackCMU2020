@@ -4,7 +4,8 @@ import os
 
 
 class Player(commands.Cog):
-
+    
+    id=0
     balance = 0
     rent = {}
     properties = {}

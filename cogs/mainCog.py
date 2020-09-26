@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
-from eventManager import EventManager
 import os
+
 
 class MainCog(commands.Cog):
 
@@ -15,6 +15,7 @@ class MainCog(commands.Cog):
     @commands.command()
     async def ping2(self,ctx):
         await ctx.send("POG")
+
 
 def setup(bot):
     bot.add_cog(MainCog(bot))
