@@ -10,7 +10,6 @@ id2=0
 
 bot=commands.Bot(command_prefix='/')
 
-
 @bot.event
 async def on_member_join(member):
     print(f'{member} has joined')
@@ -27,7 +26,6 @@ async def on_ready():
 @bot.command()
 async def clear(ctx, amount=5):
     await ctx.channel.purge(limit=amount)
-
 
 #Cog stuff
 
@@ -47,11 +45,12 @@ async def reload(ctx, extension): #extension is cog
     bot.load_extension(f'cogs.{extension}')
     await ctx.send("reloaded cog")
 
+'''
 #search cog folder for .py files
 for filename in os.listdir("./cogs"):
     if filename.endswith(".py"):
         bot.load_extension(f'cogs.{filename[:-3]}')
-
+'''
 
 #####################DISCORD GAME###########################################
 
@@ -102,104 +101,58 @@ async def printCards(ctx):
     for x in cards:
         await ctx.send(x)
 
-bot.run('NzU5MTc0MzUxMzQxMjIzOTU2.X25qNg.-_PsN-qFJaiqt0VaPPg6brDhA2s')
-
-#############MAINCOG##########################################
-
-class MainCog(commands.Cog):
-
-    def __init__(self, bot):
-        self.bot = bot
-
-    @commands.Cog.listener()
-    async def on_ready(self): # self must be first parameter in every function in class
-        print("gray squirrelssssss")
-
-    @commands.command()
-    async def ping2(self,ctx):
-        await ctx.send("POG")
-########GAME COG#################
-
-
-class GameCog(commands.Cog):
-
-    def __init__(self, bot):
-        self.bot = bot
-
-    @commands.Cog.listener()
-    async def on_ready(self): # self must be first parameter in every function in class
-        print("game cod enables")
-
-    @commands.command()
-    async def pepegga(self,ctx):
-        await ctx.send("peepo pog")
-
-    async def on_message(self, message):
-        print(message.content)
-##################################
-
-
 ###########EVENT MANAGER#############
 
-class EventManager(commands.Cog):
+@commands.Cog.listener()
+async def on_ready(): # self must be first parameter in every function in class
+    print("event manager cog enables")
 
-    players = {}
+@commands.command()
+async def isWinner(ctx, Player):
+    await ctx.send(f'{Player} has won!')
 
+@commands.command()
+async def graySquirrelers(ctx):
+    await ctx.send("SQUIRREL SQUIRREL SQUIRREL SQUIRREL")
 
-    def __init__(self, bot):
-        self.bot = bot
+@commands.command()
+async def on_message(message):
+    print(message.content)
 
-    @commands.Cog.listener()
-    async def on_ready(self): # self must be first parameter in every function in class
-        print("event manager cog enables")
+@commands.command()
+async def setPlayers(*args):
+    for player in args:
+        players += player
+@commands.command()
+async def playTurn():
+    x = 42
 
-    @commands.command()
-    async def isWinner(self, ctx, Player):
-        await ctx.send(f'{Player} has won!')
+@commands.command()
+async def makeTurn(ctx, Player):
+    x = 42
 
-    @commands.command()
-    async def graySquirrelers(self,ctx):
-        await ctx.send("SQUIRREL SQUIRREL SQUIRREL SQUIRREL")
+@commands.command()
+async def transferMoney( ctx, Player1, Player2):
+    x = 42
+@commands.command()
 
-    @commands.command()
-    async def on_message(self, message):
-        print(message.content)
-    
-    @commands.command()
-    async def setPlayers(self, *args):
-        for player in args:
-            players += player
-    @commands.command()
-    async def playTurn(self):
-        x = 42
+async def dispTable(ctx, id, player1, player2):
 
-    @commands.command()
-    async def makeTurn(self, ctx, Player):
-        x = 42
+    tableProp = player1.properties + player2.properties
+    user=bot.get_user(id)
+    for i in len(tableProp):
+        imageVal = tableProp[i]
+        await user.send(file=discord.File(f'{imageVal}.png'))
 
-    @commands.command()
-    async def transferMoney(self, ctx, Player1, Player2):
-        x = 42
-    @commands.command()
-
-    async def dispTable(self, ctx, id, player1, player2):
-
-        tableProp = player1.properties + player2.properties
-        user=bot.get_user(id)
-        for i in len(tableProp):
-            imageVal = tableProp[i]
-            await user.send(file=discord.File(f'{imageVal}.png'))
-
-    # card functions
-    # play hand
-    # display table
-    @commands.command()
-    async def trasferMoney(self, ctx, Player = player1, Player = player2, amount):
-        # self.withde
-            player1.withdraw(player1, ctx, amount)
-            player2.deposit(player2,ctx,amount)
-
-            #self.withdraw(Player1,ctx,amount)        
+# card functions
+# play hand
+# display table
+@commands.command()
+async def trasferMoney(ctx, player1, player2, amount):
+    # self.withde
+        player1.withdraw(player1, ctx, amount)
+        player2.deposit(player2,ctx,amount)
+        #self.withdraw(Player1,ctx,amount)        
 #############PLAYER#################
 
 
@@ -244,7 +197,8 @@ class Player(commands.Cog):
 #######################
 
 def setup(bot):
-    bot.add_cog(MainCog(bot))
     bot.add_cog(EventManager(bot))
     bot.add_cog(Player(bot))
-    bot.add_cog(GameCog(bot))
+   
+
+bot.run('NzU5MTc0MzUxMzQxMjIzOTU2.X25qNg.-_PsN-qFJaiqt0VaPPg6brDhA2s')
