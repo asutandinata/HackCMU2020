@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 import os
 
-
 class Player(commands.Cog):
     
     id=0
@@ -41,6 +40,3 @@ class Player(commands.Cog):
     @commands.command()
     async def getRent(self,ctx):
         await ctx.send(self.rent)
-
-def setup(bot):
-    bot.add_cog(Player(bot))

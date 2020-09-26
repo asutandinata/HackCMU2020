@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import os
+from player import Player
 
 
 
@@ -8,7 +9,11 @@ import os
 id1=0
 id2=0
 
+
 bot=commands.Bot(command_prefix='/')
+
+player1 = Player(bot)
+player2 = Player(bot)
 
 @bot.event
 async def on_member_join(member):
@@ -83,7 +88,6 @@ async def on_reaction_add(reaction, user):
         player2=player()
         player2.id=id2
         #create player 2 object here
-
     
 @bot.event
 async def on_reaction_remove(reaction, user):
@@ -156,44 +160,6 @@ async def trasferMoney(ctx, player1, player2, amount):
 #############PLAYER#################
 
 
-class Player(commands.Cog):
-    
-    id=0
-    balance = 0
-    rent = {}
-    properties = {}
-    actionCard = {}
-
-
-    def __init__(self, bot):
-        self.bot = bot
-
-    @commands.Cog.listener()
-    async def on_ready(self): # self must be first parameter in every function in class
-        print("Player Cog enabled")
-
-    @commands.command()
-    async def withdraw(self, ctx, withdrawAmount):
-        if(self.balance - withdrawAmount < 0):
-            await ctx.send("Not enough money!")
-        else:
-            self.balance -= withdrawAmount
-
-    @commands.command()
-    async def deposit(self, depositAmount):
-        self.balance += depositAmount
-
-    @commands.command()
-    async def getBalance(self,ctx):
-        await ctx.send(self.balance)
-
-    @commands.command()
-    async def getproperties(self,ctx):
-        await ctx.send(self.properties)
-
-    @commands.command()
-    async def getRent(self,ctx):
-        await ctx.send(self.rent)
 #######################
 
 def setup(bot):
