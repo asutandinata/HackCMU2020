@@ -46,14 +46,12 @@ for filename in os.listdir("./cogs"):
     if filename.endswith(".py"):
         bot.load_extension(f'cogs.{filename[:-3]}')
 
-
 @bot.command()
 async def repeat(ctx, *args):
     fullString = ""
     for word in args:
         fullString += (" " + word)
     await ctx.send(fullString)
-
 
 
 class squirrel(commands.Cog):
