@@ -105,7 +105,7 @@ async def ping(ctx):
 @bot.command()
 
 async def beginGame(ctx):
-    msg = await ctx.send('press the green or blue check below if you would like to join the game')
+    msg = await ctx.send('react with the green check to be player 1, or react with the blue check to be player 2')
     await msg.add_reaction("\u2705")
     await msg.add_reaction("\u2611")
 
@@ -117,16 +117,44 @@ async def on_reaction_add(reaction, user):
         user=bot.get_user(id1)
         await user.send('you have joined the game player 1')
         player1.id=id1
-        for i in range(5):
-            drawCard(player1)
+        beginningCardsP1()
     elif reaction.emoji=='\u2611':
         id2=user.id
         user=bot.get_user(id2)
         await user.send('you have joined the game player 2')
         player2.id=id2
-        for i in range(5):
-            drawCard(player2)
+        beginningCardsP2()
 
+def beginningCardsP1():
+    for i in range(5):
+        drawCard(player1)
+def beginningCardsP2():
+    for i in range(5):
+        drawCard(player2)  
+     
+@bot.command()
+async def identify(ctx):
+    if(ctx.author.id==player1.id):
+         await ctx.author.send('you are player 1')
+    elif(ctx.author.id==player2.id):
+         await ctx.author.send('you are player 2')
+@bot.command()
+async def draw(ctx):
+    if(ctx.author.id==player1.id):
+         player= player1
+    elif(ctx.author.id==player2.id):
+         player= player2
+    drawCard(player2)
+    await ctx.author.send("you've just drawn a card! this is your deck now:")
+    if(ctx.author.id==player1.id):
+        hand=player1.properties+player1.rent+player1.actionCard
+    elif(ctx.author.id==player2.id):
+        hand=player2.properties+player2.rent+player2.actionCard
+    for i in range(len(hand)):
+        imageVal=hand[i]
+        await ctx.author.send(file=discord.File(f'{imageVal}.png'))  
+    await ctx.author.send('end of your cards')  
+  
 @bot.command()
 async def printCards(ctx):
     if(ctx.author.id==player1.id):
@@ -136,7 +164,18 @@ async def printCards(ctx):
     for i in range(len(hand)):
         imageVal=hand[i]
         await ctx.author.send(file=discord.File(f'{imageVal}.png'))  
-    await ctx.author.send('end of your cards')        
+    await ctx.author.send('end of your cards')  
+
+@bot.command()
+async def printTable(ctx):
+    await ctx.author.send("player 1's properties")  
+    for i in range(len(player1.properties)):
+        imageVal = player1.properties[i]
+        await ctx.author.send(file=discord.File(f'{imageVal}.png'))
+    await ctx.author.send("player 2's properties") 
+    for i in range(len(player2.properties)):
+        imageVal = player2.properties[i]
+        await ctx.author.send(file=discord.File(f'{imageVal}.png'))
 
 
 @bot.command()
@@ -149,14 +188,26 @@ async def play(ctx, id):
         player=player2
         opponent=player1
     if(11<=id and id<=15):#charge other player rent
-        if(checkFullSet(player)):
-            transferMoney(ctx,player,opponent, 200)
-            #remove rent card
+        if(len(player.rent)>0):
+            if(checkFullSet(player)):
+                transferMoney(player,opponent, 200)
+                #remove rent card
+            else:
+                await ctx.author.send("you don't have a full set")
         else:
-            await ctx.author.send("you don't have a full set")
-    elif(16<=id and id<=20):
-        if(checkFullSet(player)):
-            player1.properties+=1
+            await ctx.author.send("you don't have a rent card")
+    elif(16<=id and id<=20):#house card
+        counted=0
+        for i in range(len(player.actionCard)):
+            if(player.actionCard[i]==16 or player.actionCard[i]==17 or player.actionCard[i]==18 or player.actionCard[i]==19 or player.actionCard[i]==20):
+                counted+=1
+        if(counted>0):
+            if(checkFullSet(player)):
+                player1.properties+=1
+                #remove house card
+            else:
+                await ctx.author.send("you don't have a full set")
+        else:await ctx.author.send("you don't have a house card")
             
     elif(21<=id and id<=22):#it's my birthday card
         transferMoney(ctx, player ,otherPlayerpponent, 200)
@@ -196,7 +247,8 @@ def sortArrays():
 def checkFullSet(ctx, player):
     sortArrays()
     for i in range(0,10):
-        if(player.properties[i] == 1 and player.properties[i+1] == 2):
+        if((player.properties[i] == 0 and player.properties[i+1] == 1) or 
+        (player.properties[i] == 0 and player.properties[i+1] == 2) or (player.properties[i] == 1 and player.properties[i+1] == 2)):
             return True
         if(player.properties[i] == 3 and player.properties[i+1] == 4):
             return True
@@ -216,6 +268,7 @@ async def on_message(message):
 async def setPlayers(*args):
     for player in args:
         players += player
+
 @commands.command()
 async def playTurn():
     x = 42
@@ -224,34 +277,30 @@ async def playTurn():
 async def makeTurn(ctx, Player):
     x = 42
 
-@commands.command()
-async def dispTable(ctx, id, player1, player2):
-    tableProp = player1.properties + player2.properties
-    user=bot.get_user(id)
-    for i in len(tableProp):
-        imageVal = tableProp[i]
-        await user.send(file=discord.File(f'{imageVal}.png'))
-
-
-def drawCard(player):
-    i = random.randint(0, len(deck))
+def drawCard(Player):
+    i = random.randint(0, len(deck)-1)
     print(i)
     print(deck[i])
     print(deck[0])
     if(0 <= i and i < len(deck)):
         print("valid index")
     if(deck[i] <= 10):
-        player.properties.append(i)
+        Player.properties.append(deck[i])
     elif(deck[i] <= 15):
-        player.rent.append(i)
+        Player.rent.append(deck[i])
     else:
-        player.actionCard.append(i)
-    deck.pop(i);   
+        Player.actionCard.append(deck[i])
+    deck.pop(i);       
 
-def removeCard(id, player):
-    player.properties.remove(id)
+def removeActionCard(id, player):
+    #player.properties.remove(id)    
+    player.actionCard.remove(id)
     deck.append(id)
 
+def removeRentCard(id, player):
+    player.rent.remove(id)
+    deck.append(id)
+    
 @commands.command()
 async def isHandSizeValid(player):
     if(len(rent)+len(actionCard) <= 7):
