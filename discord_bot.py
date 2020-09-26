@@ -47,15 +47,6 @@ for filename in os.listdir("./cogs"):
         bot.load_extension(f'cogs.{filename[:-3]}')
 
 
-
-
-'''
-@bot.command()
-async def callMainCog(ctx):
-    MainCog.acommand(ctx)
-
-'''
-
 @bot.command()
 async def repeat(ctx, *args):
     fullString = ""
