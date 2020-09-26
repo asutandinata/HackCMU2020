@@ -70,14 +70,19 @@ async def on_reaction_add(reaction, user):
         id1=user.id
         user=bot.get_user(id1)
         await user.send('you have joined the game player 1')
-        for i in range(1, 10):
-            await user.send(file=discord.File(f'{i}.png'))
         print('a player has joined')
+        player1=player()
+        player1.id=id1
+        #create player 1 object here
     elif reaction.emoji=='\u2611':
         id2=user.id
         user=bot.get_user(id2)
         await user.send('you have joined the game player 2')
-        print('a player has joined')
+        print('a player has joined')\
+        player2=player()
+        player2.id=id2
+        #create player 2 object here
+    elif reaction.emoji=='\U0001F1EA'
 
     
 @bot.event

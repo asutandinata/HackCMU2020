@@ -43,6 +43,13 @@ class EventManager(commands.Cog):
     @commands.command()
     async def transferMoney(self, ctx, Player1, Player2):
         x = 42
+    @commands.command()
+    async def dispTable(self, ctx, id)
+        tableProp=player1.properties+player2.properties
+        user=bot.get_user(id)
+        for i in len(tableProp)
+            imageVal=tableProp[i]
+            await user.send(file=discord.File(f'{imageVal}.png'))
 
     # card functions
     # play hand
