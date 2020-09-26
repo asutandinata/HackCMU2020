@@ -14,7 +14,8 @@ class Player(commands.Cog):
     properties = []
     actionCard = []
     won=False
-
+    houses = 0
+    isTurn=True
 
     def __init__(self, bot):
         self.bot = bot
@@ -184,7 +185,12 @@ async def printTable(ctx):
     for i in range(len(player2.properties)):
         imageVal = player2.properties[i]
         await ctx.author.send(file=discord.File(f'{imageVal}.png'))
-
+@bot.command()
+async def endTurn(ctx):
+    if(ctx.author.id==player1.id):
+        player1.isTurn=False
+    elif(ctx.author.id==player2.id):
+        player2.isTurn=True
 @bot.command()
 async def play(ctx, id):
     id=int(id)
@@ -199,17 +205,18 @@ async def play(ctx, id):
     if(11<=id and id<=15):#charge other player rent
         if(len(player.rent)>0):
             if(checkFullSet(ctx, player)):
-                transferMoney(player,opponent, 200)
-                #remove rent card
+                transferMoney(player,opponent, 200+(100 * houses))
+                removeRentCard(id, player)
             else:
                 await ctx.author.send("you don't have a full set")
         else:
             await ctx.author.send("you don't have a rent card")
     elif(16<=id and id<=20):#house card
-        if(containsRent(player)):
+        if(containsHouse(player)):
             if(checkFullSet(ctx, player)):
-                player1.properties+=1
-                #remove house card
+                player.addHouse()
+                removeActionCard(id, player)
+
             else:
                 await ctx.author.send("you don't have a full set")
         else:await ctx.author.send("you don't have a house card")
@@ -218,22 +225,26 @@ async def play(ctx, id):
         if(containsBirthday(player)):
             transferMoney(player ,opponent, 200)
             await ctx.author.send("you have successfully played your birthday card")
-            #remove birthday card
+            removeActionCard(id, player)
+            #remove birthdaycard
         else:await ctx.author.send("you don't have a birthday card")
 
     if(id==23 or id==24):#double rent play
-        if(containsDoubleRent):
+        if(containsDoubleRent(player)):
             if(checkFullSet(ctx, player) and check(len(player.rent)>0)):
+                print("checkFullSet is true")
                 transferMoney(ctx,player,opponent, 400)
-            #remove rent card, remove double rent card
+                removeRentCard(id, player)
+                #  remove double rent card
+            else: ctx.author.send('you either dont have a full set, or are missing rent cards')
         else:await ctx.author.send("you don't have a double rent card")
         
     if(id==25 or id==26):#pass go, draw 2 cards
-        if(containsPassGo):
+        if(containsPassGo(player)):
             for i in range(2):
                 drawCard(player)
             await ctx.author.send("you have succesfully played your pass go card")
-            #remove pa
+            removeActionCard(id, player)
         else:await ctx.author.send("you don't have a pass go card")
 @bot.command()
 async def bal(ctx):
@@ -255,11 +266,16 @@ async def on_ready(): # self must be first parameter in every function in class
 @commands.command()
 async def isWinner(ctx, Player):
     await ctx.send(f'{Player} has won!')
-
+def containsHoude(player):
+    counted=0
+    for i in range(len(player.actionCard)):
+        if(player.actionCard[i]==16 or player.actionCard[i]==17 or player.actionCard[i]==18 or player.actionCard[i]==19 or player.actionCard[i]==20):
+            counted+=1
+    if(counted>0):return True
+    else:return False
 def containsRent(player):
     if(len(player.rent)>0):return True
     else:return False
-
 def containsBirthday(player):
     counted=0
     for i in range(len(player.actionCard)):
@@ -290,7 +306,7 @@ def sortArrays():
 
 def checkFullSet(ctx, player):
     sortArrays()
-    for i in range(0,10):
+    for i in range(0, len(player.properties)):
         if((player.properties[i] == 0 and player.properties[i+1] == 1) or 
         (player.properties[i] == 0 and player.properties[i+1] == 2) or (player.properties[i] == 1 and player.properties[i+1] == 2)):
             return True
@@ -342,8 +358,7 @@ def drawCard(Player):
         player.actionCard.append(deck[i])
     deck.pop(i);          
 
-def removeActionCard(id, player):
-    #player.properties.remove(id)    
+def removeActionCard(id, player):   
     player.actionCard.remove(id)
     deck.append(id)
 
@@ -358,6 +373,8 @@ async def isHandSizeValid(player):
     else:
         return False
 
+def addHouse(player):
+    houses += 1
 
 def trasferMoney(ctx, player1, player2, amount):
         player1.withdraw(player1, ctx, amount)
