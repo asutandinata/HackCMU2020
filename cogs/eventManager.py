@@ -44,10 +44,10 @@ class EventManager(commands.Cog):
     async def transferMoney(self, ctx, Player1, Player2):
         x = 42
     @commands.command()
-    async def dispTable(self, ctx, id)
+    async def dispTable(self, ctx, id):
         tableProp=player1.properties+player2.properties
         user=bot.get_user(id)
-        for i in len(tableProp)
+        for i in len(tableProp):
             imageVal=tableProp[i]
             await user.send(file=discord.File(f'{imageVal}.png'))
 
@@ -56,8 +56,8 @@ class EventManager(commands.Cog):
     # display table
 
 
-    @commands.command()
-    async def trasferMoney(self, ctx, Player = player1, Player = player2, amount):
+@commands.command()
+async def trasferMoney(self, ctx, Player = player1, Player = player2, amount):
        # self.withde
         player1.withdraw(player1, ctx, amount)
         player2.deposit(player2,ctx,amount)
